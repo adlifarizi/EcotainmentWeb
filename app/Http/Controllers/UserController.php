@@ -7,13 +7,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Http\JsonResponse;
 
 class UserController extends Controller
 {
-    public function signUp(Request $request)
+    public function signUp(Request $request): JsonResponse 
     {
         try {
-            // Validasi input
             $request->validate([
                 'email' => 'nullable|email|unique:users,email',
                 'phone_number' => 'nullable',
@@ -21,7 +21,6 @@ class UserController extends Controller
                 'username' => 'nullable',
             ]);
 
-            // Pastikan setidaknya email atau phone_number diisi
             if (!$request->email && !$request->phone_number) {
                 return response()->json([
                     'success' => false,
@@ -29,7 +28,6 @@ class UserController extends Controller
                 ], 422);
             }
 
-            // Buat user baru
             $user = User::create([
                 'email' => $request->email,
                 'phone_number' => $request->phone_number,
@@ -37,7 +35,6 @@ class UserController extends Controller
                 'username' => $request->username,
             ]);
 
-            // Generate token untuk user
             $token = $user->createToken('Ecotainment')->plainTextToken;
 
             return response()->json([
@@ -64,7 +61,7 @@ class UserController extends Controller
         }
     }
 
-    public function signIn(Request $request)
+    public function signIn(Request $request): JsonResponse
     {
         try {
             $request->validate([
@@ -73,33 +70,21 @@ class UserController extends Controller
                 'password' => 'required|min:6',
             ]);
 
-            // Pastikan setidaknya email atau phone_number diisi
             if (!$request->email && !$request->phone_number) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Email atau nomor telepon harus diisi'
+                    'message' => 'Email atau nomor telepon harus diisi',
                 ], 422);
             }
 
-            // Coba login dengan email
-            if ($request->email) {
-                $credentials = [
-                    'email' => $request->email,
-                    'password' => $request->password
-                ];
-            }
-            // Coba login dengan phone_number
-            else {
-                $credentials = [
-                    'phone_number' => $request->phone_number,
-                    'password' => $request->password
-                ];
-            }
+            $credentials = $request->email
+                ? ['email' => $request->email, 'password' => $request->password]
+                : ['phone_number' => $request->phone_number, 'password' => $request->password];
 
             if (!Auth::attempt($credentials)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Email/No Telepon atau password salah'
+                    'message' => 'Email/No Telepon atau password salah',
                 ], 401);
             }
 
@@ -111,7 +96,7 @@ class UserController extends Controller
                 'message' => 'Login berhasil',
                 'data' => [
                     'user' => $user,
-                    'token' => $token
+                    'token' => $token,
                 ]
             ], 200);
 
@@ -130,11 +115,9 @@ class UserController extends Controller
         }
     }
 
-
-    public function updateProfile(Request $request)
+    public function updateProfile(Request $request): JsonResponse
     {
         try {
-            // Validasi data input
             $request->validate([
                 'email' => 'nullable|email|unique:users,email,' . Auth::id(),
                 'password' => 'nullable|min:6',
@@ -144,36 +127,21 @@ class UserController extends Controller
                 'address' => 'nullable|string',
             ]);
 
-            // Ambil user yang sedang login
             $user = Auth::user();
 
-            // Update data yang diinputkan
-            if ($request->has('email')) {
-                $user->email = $request->email;
-            }
-            if ($request->has('password')) {
-                $user->password = Hash::make($request->password);
-            }
-            if ($request->has('username')) {
-                $user->username = $request->username;
-            }
-            if ($request->has('phone_number')) {
-                $user->phone_number = $request->phone_number;
-            }
-            if ($request->has('profile_picture')) {
-                $user->profile_picture = $request->profile_picture;
-            }
-            if ($request->has('address')) {
-                $user->address = $request->address;
-            }
+            if ($request->has('email')) $user->email = $request->email;
+            if ($request->has('password')) $user->password = Hash::make($request->password);
+            if ($request->has('username')) $user->username = $request->username;
+            if ($request->has('phone_number')) $user->phone_number = $request->phone_number;
+            if ($request->has('profile_picture')) $user->profile_picture = $request->profile_picture;
+            if ($request->has('address')) $user->address = $request->address;
 
-            // Simpan perubahan
             $user->save();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Profil berhasil diperbarui',
-                'data' => $user
+                'data' => $user,
             ], 200);
 
         } catch (ValidationException $e) {
@@ -191,12 +159,9 @@ class UserController extends Controller
         }
     }
 
-
-
-    public function logout(Request $request)
+    public function logout(Request $request): \Illuminate\Http\JsonResponse
     {
         try {
-            // Cek apakah user terautentikasi dan memiliki token
             if (!$request->user() || !$request->user()->currentAccessToken()) {
                 return response()->json([
                     'success' => false,
@@ -204,7 +169,6 @@ class UserController extends Controller
                 ], 401);
             }
 
-            // Revoke token yang sedang digunakan
             $request->user()->currentAccessToken()->delete();
 
             return response()->json([
@@ -216,7 +180,6 @@ class UserController extends Controller
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat proses logout',
                 'error' => $e->getMessage(),
-                'error_code' => 'AUTH004'
             ], 500);
         }
     }
