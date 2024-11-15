@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\PurchaseHistoryController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SearchHistoryController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
@@ -19,6 +20,8 @@ Route::prefix('auth')->group(function () {
 // Route untuk product tanpa middleware auth
 Route::get('/products', [ProductController::class, 'index']);
 Route::post('/products', [ProductController::class, 'store']);
+Route::get('/products/{id}', [ProductController::class, 'showByProductId']);
+
 
 Route::get('/test', function () {
     return response()->json([
@@ -61,5 +64,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('search-history')->group(function () {
         Route::get('/', [SearchHistoryController::class, 'index']);
         Route::post('/', [SearchHistoryController::class, 'store']);
+    });
+
+    // Route menambahkan review pada produk
+    Route::prefix('products/{productId}')->group(function () {
+        // Route untuk menambah ulasan pada produk
+        Route::post('/reviews', [ReviewController::class, 'store']);
+
+        // Route untuk melihat semua ulasan pada produk
+        Route::get('/reviews', [ReviewController::class, 'index']);
     });
 });
