@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Storage;
 
@@ -84,22 +86,17 @@ class ProductController extends Controller
         ], 201);
     }
 
-    public function showByProductId($id)
-    {
-        // Ambil produk berdasarkan ID dan sertakan relasi 'reviews' dan rata-rata rating
-        $product = Product::with([
-            'reviews.user',
-            'reviews' => function ($query) {
-                $query->select('id', 'user_id', 'product_id', 'rating', 'comment', 'created_at'); // Ambil data review tertentu
-            }
-        ])
-            ->withAvg('reviews', 'rating') // Menambahkan rata-rata rating
-            ->findOrFail($id);  // Jika produk tidak ditemukan, akan melemparkan error 404
+    public function showByProductId($id): JsonResponse
+{
+    try {
+        $product = Product::with(['reviews.user', 'reviews' => function($query) {
+            $query->select('id', 'user_id', 'product_id', 'rating', 'comment', 'created_at');
+        }])
+        ->withAvg('reviews', 'rating')
+        ->findOrFail($id);
 
-        // Format rata-rata rating jika diperlukan
-        $averageRating = number_format($product->reviews_avg_rating, 1);
+        $averageRating = number_format($product->reviews_avg_rating ?? 0, 1);
 
-        // Data response yang disertakan ulasan dan rata-rata rating
         return response()->json([
             'status' => 200,
             'message' => 'Berhasil mengambil produk dan ulasan',
@@ -111,13 +108,34 @@ class ProductController extends Controller
                 'description' => $product->description,
                 'image' => $product->image,
                 'total_sales' => $product->total_sales,
-                'average_rating' => $averageRating, // Rata-rata rating
-                'reviews' => $product->reviews, // Ulasan produk
+                'average_rating' => $averageRating,
+                'reviews' => $product->reviews,
                 'created_at' => $product->created_at,
                 'updated_at' => $product->updated_at,
             ]
-        ], 200);
+        ], 200, [
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json'
+        ]);
+    } catch (ModelNotFoundException $e) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'Produk tidak ditemukan'
+        ], 404, [
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 500,
+            'message' => 'Terjadi kesalahan pada server',
+            'error' => $e->getMessage()
+        ], 500, [
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json'
+        ]);
     }
+}
 
 
 }

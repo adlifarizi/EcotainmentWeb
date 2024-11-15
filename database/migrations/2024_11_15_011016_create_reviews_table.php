@@ -19,8 +19,6 @@ return new class extends Migration {
             $table->tinyInteger('rating')->unsigned(); // Nilai rating, misalnya antara 1-5
             $table->text('comment')->nullable(); // Komentar ulasan
             $table->timestamps();
-
-            $table->unique(['user_id', 'product_id']);
         });
     }
 
