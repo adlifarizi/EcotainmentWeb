@@ -42,7 +42,7 @@ class ReviewController extends Controller
             // $review->load('user');
 
             return response()->json([
-                'status' => 201,
+                'success' => true,
                 'message' => 'Ulasan berhasil ditambahkan',
                 'data' => $review
             ], 201, [
@@ -52,7 +52,7 @@ class ReviewController extends Controller
 
         } catch (ModelNotFoundException $e) {
             return response()->json([
-                'status' => 404,
+                'success' => false,
                 'message' => 'Produk tidak ditemukan'
             ], 404, [
                 'Content-Type' => 'application/json',
@@ -61,7 +61,7 @@ class ReviewController extends Controller
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
-                'status' => 422,
+                'success' => false,
                 'message' => 'Data yang diberikan tidak valid',
                 'errors' => $e->errors()
             ], 422, [
@@ -71,7 +71,7 @@ class ReviewController extends Controller
 
         } catch (\Exception $e) {
             return response()->json([
-                'status' => 500,
+                'success' => false,
                 'message' => 'Terjadi kesalahan pada server',
                 'error' => $e->getMessage()
             ], 500, [
@@ -98,7 +98,7 @@ class ReviewController extends Controller
                 ->get();
 
             return response()->json([
-                'status' => 200,
+                'success' => true,
                 'message' => 'Berhasil mengambil ulasan produk',
                 'data' => [
                     'product_id' => $product->id,
@@ -114,7 +114,7 @@ class ReviewController extends Controller
 
         } catch (ModelNotFoundException $e) {
             return response()->json([
-                'status' => 404,
+                'success' => false,
                 'message' => 'Produk tidak ditemukan'
             ], 404, [
                 'Content-Type' => 'application/json',
@@ -123,7 +123,7 @@ class ReviewController extends Controller
 
         } catch (\Exception $e) {
             return response()->json([
-                'status' => 500,
+                'success' => false,
                 'message' => 'Terjadi kesalahan pada server',
                 'error' => $e->getMessage()
             ], 500, [

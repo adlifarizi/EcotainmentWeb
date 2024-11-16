@@ -159,7 +159,7 @@ class UserController extends Controller
         }
     }
 
-    public function logout(Request $request): \Illuminate\Http\JsonResponse
+    public function logout(Request $request): JsonResponse
     {
         try {
             if (!$request->user() || !$request->user()->currentAccessToken()) {

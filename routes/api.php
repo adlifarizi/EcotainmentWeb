@@ -10,6 +10,14 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\WishlistController;
 use Illuminate\Support\Facades\Route;
 
+// Route untuk Testing
+Route::get('/test', function () {
+    return response()->json([
+        'message' => 'API Test Successful',
+        'status' => 200
+    ]);
+});
+
 // Route untuk User Authentication (Tanpa Middleware)
 Route::prefix('auth')->group(function () {
     Route::post('/signup', [UserController::class, 'signUp']);
@@ -21,15 +29,8 @@ Route::prefix('auth')->group(function () {
 Route::prefix('products')->group(function () {
     Route::get('/', [ProductController::class, 'index']); // Semua produk
     Route::get('/{id}', [ProductController::class, 'showByProductId']); // Detail produk
-    Route::post('/', [ProductController::class, 'store'])->middleware('auth:sanctum'); // Tambah produk (Admin)
-});
-
-// Route untuk Testing
-Route::get('/test', function () {
-    return response()->json([
-        'message' => 'API Test Successful',
-        'status' => 200
-    ]);
+    Route::post('/', [ProductController::class, 'store']);
+    // Route::post('/', [ProductController::class, 'store'])->middleware('auth:sanctum'); // Tambah produk (Admin)
 });
 
 // Route yang Membutuhkan Autentikasi
@@ -38,8 +39,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Wishlist Routes
     Route::prefix('wishlist')->group(function () {
         Route::get('/', [WishlistController::class, 'index']);
-        Route::post('/', [WishlistController::class, 'store']);
-        Route::delete('/{id}', [WishlistController::class, 'destroy']);
+        Route::post('/toggle', [WishlistController::class, 'toggle']);
     });
 
     // Cart Routes
@@ -47,6 +47,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [CartController::class, 'index']);
         Route::post('/', [CartController::class, 'store']);
         Route::delete('/{id}', [CartController::class, 'destroy']);
+        Route::patch('/{id}/quantity', [CartController::class, 'updateQuantity']);
     });
 
     // Transaction Routes
@@ -68,9 +69,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/', [SearchHistoryController::class, 'store']);
     });
 
-    // Route untuk Review Produk (Nested di dalam /products)
-    Route::prefix('products/{productId}')->group(function () {
-        Route::get('/reviews', [ReviewController::class, 'index']); // Semua ulasan untuk produk
-        Route::post('/reviews', [ReviewController::class, 'store']); // Tambahkan ulasan baru
+    // Route untuk Review oleh User
+    Route::prefix('reviews/{productId}')->group(function () {
+        Route::get('/', [ReviewController::class, 'index']); // Semua ulasan dari User
+        Route::post('/', [ReviewController::class, 'store']); // Tambahkan ulasan baru
     });
 });

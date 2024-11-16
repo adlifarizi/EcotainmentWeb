@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
 use App\Models\Wishlist;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -11,59 +13,65 @@ class WishlistController extends Controller
     /**
      * Menampilkan semua wishlist produk untuk user yang sedang login.
      */
-    public function index()
+    public function index(): JsonResponse
     {
-        $wishlists = Wishlist::where('user_id', Auth::id())->with('product')->get();
+        $wishlists = Wishlist::where('user_id', Auth::id())
+            ->with('product')
+            ->get();
 
         return response()->json([
-            'status' => 200,
+            'success' => true,
             'message' => 'Berhasil mengambil semua produk dalam wishlist',
             'data' => $wishlists,
         ], 200);
     }
 
-
     /**
-     * Menambahkan produk ke wishlist.
+     * Menambahkan atau menghapus produk dari wishlist.
      */
-    public function store(Request $request)
+    public function toggle(Request $request): JsonResponse
     {
+        // Validasi inputan product_id dan pastikan produk ada di database
         $request->validate([
             'product_id' => 'required|exists:products,id',
         ]);
 
-        $wishlist = Wishlist::create([
-            'user_id' => Auth::id(),
-            'product_id' => $request->product_id,
-        ]);
+        // Cek apakah produk ada di database
+        $productExists = Product::find($request->product_id);
 
-        return response()->json([
-            'status' => 201,
-            'message' => 'Produk berhasil ditambahkan ke wishlist',
-            'data' => $wishlist,
-        ], 201);
-    }
-
-
-    /**
-     * Menghapus produk dari wishlist.
-     */
-    public function destroy($id)
-    {
-        $wishlist = Wishlist::where('user_id', Auth::id())->where('product_id', $id)->first();
-
-        if (!$wishlist) {
+        if (!$productExists) {
             return response()->json([
-                'status' => 404,
-                'message' => 'Produk tidak ditemukan dalam wishlist',
+                'success' => false,
+                'message' => 'Produk tidak ditemukan di database',
             ], 404);
         }
 
-        $wishlist->delete();
+        // Cek apakah produk sudah ada di wishlist
+        $wishlist = Wishlist::where('user_id', Auth::id())
+            ->where('product_id', $request->product_id)
+            ->first();
 
-        return response()->json([
-            'status' => 200,
-            'message' => 'Produk berhasil dihapus dari wishlist',
-        ], 200);
+        if ($wishlist) {
+            // Hapus produk jika sudah ada di wishlist
+            $wishlist->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Produk berhasil dihapus dari wishlist',
+            ], 200);
+        } else {
+            // Tambahkan produk jika belum ada di wishlist
+            $newWishlist = Wishlist::create([
+                'user_id' => Auth::id(),
+                'product_id' => $request->product_id,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Produk berhasil ditambahkan ke wishlist',
+                'data' => $newWishlist,
+            ], 201);
+        }
     }
+
 }

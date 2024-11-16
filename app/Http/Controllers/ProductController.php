@@ -37,7 +37,7 @@ class ProductController extends Controller
             });
 
         return response()->json([
-            'status' => 200,
+            'success' => true,
             'message' => 'Berhasil mengambil semua produk',
             'data' => $products,
         ], 200);
@@ -69,7 +69,7 @@ class ProductController extends Controller
         ]);
 
         return response()->json([
-            'status' => 201,
+            'ssuccess' => true,
             'message' => 'Produk berhasil ditambahkan',
             'data' => $product,
         ], 201);
@@ -90,7 +90,7 @@ class ProductController extends Controller
             $averageRating = number_format($product->reviews_avg_rating ?? 0, 1);
 
             return response()->json([
-                'status' => 200,
+                'success' => true,
                 'message' => 'Berhasil mengambil produk dan ulasan',
                 'data' => [
                     'id' => $product->id,
@@ -108,12 +108,12 @@ class ProductController extends Controller
             ], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json([
-                'status' => 404,
+                'success' => false,
                 'message' => 'Produk tidak ditemukan',
             ], 404);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => 500,
+                'success' => false,
                 'message' => 'Terjadi kesalahan pada server',
                 'error' => $e->getMessage(),
             ], 500);
