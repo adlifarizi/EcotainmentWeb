@@ -13,24 +13,26 @@ use Illuminate\Support\Facades\Route;
 // Route untuk Testing
 Route::get('/test', function () {
     return response()->json([
-        'message' => 'API Test Successful',
+        'message' => 'API Test Versi 2',
         'status' => 200
     ]);
 });
 
-// Route untuk User Authentication (Tanpa Middleware)
+// Route untuk User Authentication
 Route::prefix('auth')->group(function () {
     Route::post('/signup', [UserController::class, 'signUp']);
     Route::post('/signin', [UserController::class, 'signIn']);
     Route::middleware('auth:sanctum')->post('/logout', [UserController::class, 'logout']);
+    Route::middleware('auth:sanctum')->get('/user', [UserController::class, 'getUserData']);
 });
 
-// Route Produk Tanpa Middleware (Public Routes)
+// Route Produk
 Route::prefix('products')->group(function () {
     Route::get('/', [ProductController::class, 'index']); // Semua produk
     Route::get('/{id}', [ProductController::class, 'showByProductId']); // Detail produk
     Route::post('/', [ProductController::class, 'store']);
     // Route::post('/', [ProductController::class, 'store'])->middleware('auth:sanctum'); // Tambah produk (Admin)
+    Route::delete('/{id}', [ProductController::class, 'destroy']);
 });
 
 // Route yang Membutuhkan Autentikasi

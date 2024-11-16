@@ -11,7 +11,7 @@ use Illuminate\Http\JsonResponse;
 
 class UserController extends Controller
 {
-    public function signUp(Request $request): JsonResponse 
+    public function signUp(Request $request): JsonResponse
     {
         try {
             $request->validate([
@@ -129,12 +129,18 @@ class UserController extends Controller
 
             $user = Auth::user();
 
-            if ($request->has('email')) $user->email = $request->email;
-            if ($request->has('password')) $user->password = Hash::make($request->password);
-            if ($request->has('username')) $user->username = $request->username;
-            if ($request->has('phone_number')) $user->phone_number = $request->phone_number;
-            if ($request->has('profile_picture')) $user->profile_picture = $request->profile_picture;
-            if ($request->has('address')) $user->address = $request->address;
+            if ($request->has('email'))
+                $user->email = $request->email;
+            if ($request->has('password'))
+                $user->password = Hash::make($request->password);
+            if ($request->has('username'))
+                $user->username = $request->username;
+            if ($request->has('phone_number'))
+                $user->phone_number = $request->phone_number;
+            if ($request->has('profile_picture'))
+                $user->profile_picture = $request->profile_picture;
+            if ($request->has('address'))
+                $user->address = $request->address;
 
             $user->save();
 
@@ -183,4 +189,25 @@ class UserController extends Controller
             ], 500);
         }
     }
+
+    public function getUserData(Request $request): JsonResponse
+    {
+        try {
+            // Mendapatkan data pengguna yang sedang login
+            $user = $request->user(); // Menggunakan autentikasi untuk mendapatkan pengguna yang sedang login
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil mendapatkan data pengguna',
+                'data' => $user,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data pengguna',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
 }

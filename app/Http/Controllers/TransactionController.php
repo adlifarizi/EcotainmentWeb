@@ -7,24 +7,28 @@ use App\Models\TransactionItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Http\JsonResponse;
 
 class TransactionController extends Controller
 {
     /**
      * Menampilkan semua transaksi untuk user yang sedang login.
      */
-    public function index()
+    public function index(): JsonResponse
     {
         $transactions = Transaction::with('items.product')->where('user_id', Auth::id())->get();
 
         return response()->json([
-            'status' => 200,
+            'success' => true,
             'message' => 'Berhasil mengambil semua transaksi',
             'data' => $transactions,
         ], 200);
     }
 
-    public function store(Request $request)
+    /**
+     * Menyimpan transaksi baru.
+     */
+    public function store(Request $request): JsonResponse
     {
         try {
             $request->validate([
@@ -38,7 +42,7 @@ class TransactionController extends Controller
             $transaction = Transaction::create([
                 'user_id' => Auth::id(),
                 'total_amount' => $request->total_amount,
-                'status' => 'pending',
+                'status' => 'pending', // Status awal adalah 'pending'
             ]);
 
             foreach ($request->items as $item) {
@@ -49,44 +53,69 @@ class TransactionController extends Controller
                 ]);
             }
 
+            $transaction->load('items.product'); // Memuat relasi
+
             return response()->json([
-                'status' => 201,
+                'success' => true,
                 'message' => 'Transaksi berhasil dibuat',
-                'data' => $transaction->load('items.product'),
+                'data' => $transaction,
             ], 201);
 
         } catch (ValidationException $e) {
             return response()->json([
-                'status' => 422,
+                'success' => false,
                 'message' => 'Validasi gagal',
                 'errors' => $e->errors()
             ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan pada server',
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 
-
-    public function updateStatus(Request $request, $id)
+    /**
+     * Mengupdate status transaksi berdasarkan ID transaksi.
+     */
+    public function updateStatus(Request $request, $id): JsonResponse
     {
         $request->validate([
-            'status' => 'required|in:pending,completed,canceled',
+            'status' => 'required|in:pending,processed,completed,canceled',
         ]);
 
-        $transaction = Transaction::where('user_id', Auth::id())->where('id', $id)->first();
+        try {
+            $transaction = Transaction::where('user_id', Auth::id())->findOrFail($id);
 
-        if (!$transaction) {
+            // Pastikan status transaksi yang sudah selesai atau dibatalkan tidak bisa diubah
+            if ($transaction->status == 'completed' || $transaction->status == 'canceled') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak dapat mengubah status transaksi yang sudah diselesaikan atau dibatalkan.',
+                ], 400);
+            }
+
+            $transaction->status = $request->status;
+            $transaction->save();
+
             return response()->json([
-                'status' => 404,
+                'success' => true,
+                'message' => 'Status transaksi berhasil diperbarui',
+                'data' => $transaction,
+            ], 200);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
                 'message' => 'Transaksi tidak ditemukan',
             ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan pada server',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-
-        $transaction->status = $request->status;
-        $transaction->save();
-
-        return response()->json([
-            'status' => 200,
-            'message' => 'Status transaksi berhasil diperbarui',
-            'data' => $transaction,
-        ], 200);
     }
 }
