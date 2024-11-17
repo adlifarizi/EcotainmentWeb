@@ -130,4 +130,46 @@ class CartController extends Controller
             'data' => $cart,
         ], 200);
     }
+
+    /**
+     * Mengambil data cart berdasarkan satu atau lebih product_id.
+     */
+    public function showByProductIds(Request $request): JsonResponse
+    {
+        try {
+            $request->validate([
+                'product_ids' => 'required|array|min:1',
+                'product_ids.*' => 'integer|exists:products,id',
+            ]);
+
+            $carts = Cart::where('user_id', Auth::id())
+                ->whereIn('product_id', $request->product_ids)
+                ->with('product')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil mengambil data cart berdasarkan product_id',
+                'data' => $carts,
+            ], 200);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Menangani kesalahan validasi
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $e->errors(),
+            ], 422);
+
+        } catch (\Exception $e) {
+            // Menangani kesalahan tak terduga
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan pada server',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
 }

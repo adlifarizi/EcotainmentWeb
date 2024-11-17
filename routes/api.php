@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 // Route untuk Testing
 Route::get('/test', function () {
     return response()->json([
-        'message' => 'API Test Versi 2',
+        'message' => 'API Test Versi 3',
         'status' => 200
     ]);
 });
@@ -50,6 +50,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/', [CartController::class, 'store']);
         Route::delete('/{id}', [CartController::class, 'destroy']);
         Route::patch('/{id}/quantity', [CartController::class, 'updateQuantity']);
+        Route::post('/filter-by-products', [CartController::class, 'showByProductIds']);
     });
 
     // Transaction Routes
