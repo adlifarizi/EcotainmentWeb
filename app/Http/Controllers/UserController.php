@@ -28,11 +28,17 @@ class UserController extends Controller
                 ], 422);
             }
 
+            // Jika username tidak diisi, ambil bagian awal dari email (sebelum '@')
+            $username = $request->username;
+            if (!$username && $request->email) {
+                $username = explode('@', $request->email)[0];
+            }
+
             $user = User::create([
                 'email' => $request->email,
                 'phone_number' => $request->phone_number,
                 'password' => Hash::make($request->password),
-                'username' => $request->username,
+                'username' => $username,
             ]);
 
             $token = $user->createToken('Ecotainment')->plainTextToken;
