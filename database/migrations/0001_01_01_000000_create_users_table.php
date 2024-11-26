@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('username')->nullable();
             $table->string('phone_number')->nullable();
             $table->string('profile_picture')->nullable();
-            $table->string('address')->nullable();
             $table->timestamps();
         });
     }

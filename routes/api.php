@@ -24,6 +24,9 @@ Route::prefix('auth')->group(function () {
     Route::post('/signin', [UserController::class, 'signIn']);
     Route::middleware('auth:sanctum')->post('/logout', [UserController::class, 'logout']);
     Route::middleware('auth:sanctum')->get('/user', [UserController::class, 'getUserData']);
+    Route::middleware('auth:sanctum')->put('/profile', [UserController::class, 'updateProfile']);
+    Route::middleware('auth:sanctum')->get('/address', [UserController::class, 'getAddress']);
+    Route::middleware('auth:sanctum')->post('/address', [UserController::class, 'addAddress']);
 });
 
 // Route Produk

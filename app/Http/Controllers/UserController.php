@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Address;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -130,7 +131,6 @@ class UserController extends Controller
                 'username' => 'nullable|string',
                 'phone_number' => 'nullable|string',
                 'profile_picture' => 'nullable|url',
-                'address' => 'nullable|string',
             ]);
 
             $user = Auth::user();
@@ -145,8 +145,6 @@ class UserController extends Controller
                 $user->phone_number = $request->phone_number;
             if ($request->has('profile_picture'))
                 $user->profile_picture = $request->profile_picture;
-            if ($request->has('address'))
-                $user->address = $request->address;
 
             $user->save();
 
@@ -199,8 +197,8 @@ class UserController extends Controller
     public function getUserData(Request $request): JsonResponse
     {
         try {
-            // Mendapatkan data pengguna yang sedang login
-            $user = $request->user(); // Menggunakan autentikasi untuk mendapatkan pengguna yang sedang login
+            // Mendapatkan data pengguna yang sedang login dan memuat relasi addresses
+            $user = $request->user()->load('addresses');
 
             return response()->json([
                 'success' => true,
@@ -215,5 +213,65 @@ class UserController extends Controller
             ], 500);
         }
     }
+
+    public function addAddress(Request $request): JsonResponse
+    {
+        try {
+            $request->validate([
+                'recipient_name' => 'required|string',
+                'phone_number' => 'required|string',
+                'city_or_district' => 'required|string',
+                'detailed_address' => 'required|string',
+            ]);
+
+            $address = Address::create([
+                'user_id' => Auth::id(),
+                'recipient_name' => $request->recipient_name,
+                'phone_number' => $request->phone_number,
+                'province' => $request->province,
+                'city_or_district' => $request->city_or_district,
+                'detailed_address' => $request->detailed_address,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Alamat berhasil ditambahkan',
+                'data' => $address,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data pengguna',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+
+    }
+
+
+    public function getAddress(Request $request): JsonResponse
+    {
+        try {
+            // Mendapatkan user yang sedang login
+            $user = $request->user();
+
+            // Mendapatkan semua alamat terkait dengan user tersebut
+            $addresses = $user->addresses;
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil mendapatkan data alamat',
+                'data' => $addresses,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data alamat',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
 
 }

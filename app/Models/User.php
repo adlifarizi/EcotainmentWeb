@@ -23,7 +23,6 @@ class User extends Authenticatable
         'username',
         'phone_number',
         'profile_picture',
-        'address',
     ];
 
     /**
@@ -62,5 +61,10 @@ class User extends Authenticatable
                 $model->id = substr(str_replace('-', '', (string) Str::uuid()), 0, 20);
             }
         });
+    }
+
+    public function addresses()
+    {
+        return $this->hasMany(Address::class, 'user_id');
     }
 }
