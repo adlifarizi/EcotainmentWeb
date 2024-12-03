@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Http\JsonResponse;
+use Storage;
 
 class UserController extends Controller
 {
@@ -130,21 +131,45 @@ class UserController extends Controller
                 'password' => 'nullable|min:6',
                 'username' => 'nullable|string',
                 'phone_number' => 'nullable|string',
-                'profile_picture' => 'nullable|url',
+                'profile_picture' => 'nullable|file|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
 
             $user = Auth::user();
 
-            if ($request->has('email'))
+            // Update email
+            if ($request->has('email')) {
                 $user->email = $request->email;
-            if ($request->has('password'))
+            }
+
+            // Update password
+            if ($request->has('password')) {
                 $user->password = Hash::make($request->password);
-            if ($request->has('username'))
+            }
+
+            // Update username
+            if ($request->has('username')) {
                 $user->username = $request->username;
-            if ($request->has('phone_number'))
+            }
+
+            // Update phone_number
+            if ($request->has('phone_number')) {
                 $user->phone_number = $request->phone_number;
-            if ($request->has('profile_picture'))
-                $user->profile_picture = $request->profile_picture;
+            }
+
+            // Handle profile_picture
+            if ($request->hasFile('profile_picture')) {
+                // Hapus file gambar lama jika ada
+                if ($user->profile_picture) {
+                    $oldImagePath = str_replace('/storage', 'public', $user->profile_picture);
+                    if (Storage::exists($oldImagePath)) {
+                        Storage::delete($oldImagePath);
+                    }
+                }
+
+                // Simpan gambar baru
+                $imagePath = $request->file('profile_picture')->store('images', 'public');
+                $user->profile_picture = Storage::url($imagePath);
+            }
 
             $user->save();
 
@@ -158,16 +183,17 @@ class UserController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Validasi gagal',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat memperbarui profil',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
+
 
     public function logout(Request $request): JsonResponse
     {
