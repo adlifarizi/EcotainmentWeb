@@ -155,6 +155,10 @@ class TransactionController extends Controller
 
             // Perbarui path bukti pembayaran di database
             $transaction->payment_proof = Storage::url($imagePath);
+
+            // Ubah status transaksi menjadi processed
+            $transaction->status = 'processed';
+
             $transaction->save();
 
             return response()->json([
