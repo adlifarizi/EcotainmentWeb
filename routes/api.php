@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 // Route untuk Testing
 Route::get('/test', function () {
     return response()->json([
-        'message' => 'API Test Versi 6',
+        'message' => 'API Test Versi 7',
         'status' => 200
     ]);
 });
@@ -61,6 +61,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [TransactionController::class, 'index']);
         Route::post('/', [TransactionController::class, 'store']);
         Route::patch('/{id}/status', [TransactionController::class, 'updateStatus']);
+        Route::post('/{id}/proof', [TransactionController::class, 'uploadPaymentProof']);
     });
 
     // Purchase History Routes

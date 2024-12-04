@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Http\JsonResponse;
+use Storage;
 
 class TransactionController extends Controller
 {
@@ -118,4 +119,65 @@ class TransactionController extends Controller
             ], 500);
         }
     }
+
+
+    /**
+     * Mengunggah bukti pembayaran untuk transaksi berdasarkan ID transaksi.
+     */
+    public function uploadPaymentProof(Request $request, $id): JsonResponse
+    {
+        $request->validate([
+            'payment_proof' => 'required|file|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        try {
+            // Cari transaksi berdasarkan ID dan user yang sedang login
+            $transaction = Transaction::where('user_id', Auth::id())->findOrFail($id);
+
+            // Pastikan transaksi masih dalam status pending
+            if ($transaction->status !== 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bukti pembayaran hanya dapat diunggah untuk transaksi dengan status pending.',
+                ], 400);
+            }
+
+            // Hapus file bukti pembayaran lama jika ada
+            if ($transaction->payment_proof) {
+                $oldImagePath = str_replace('/storage', 'public', $transaction->payment_proof);
+                if (Storage::exists($oldImagePath)) {
+                    Storage::delete($oldImagePath);
+                }
+            }
+
+            // Simpan file bukti pembayaran baru
+            $imagePath = $request->file('payment_proof')->store('payment_proofs', 'public');
+
+            // Perbarui path bukti pembayaran di database
+            $transaction->payment_proof = Storage::url($imagePath);
+            $transaction->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Bukti pembayaran berhasil diunggah.',
+                'data' => [
+                    'transaction_id' => $transaction->id,
+                    'payment_proof_url' => $transaction->payment_proof,
+                ],
+            ], 200);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Transaksi tidak ditemukan.',
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan pada server.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
 }

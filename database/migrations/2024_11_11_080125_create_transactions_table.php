@@ -18,6 +18,7 @@ return new class extends Migration
             
             $table->integer('total_amount'); // total pembayaran
             $table->enum('status', ['pending', 'processed', 'completed', 'canceled'])->default('pending'); // status transaksi
+            $table->string('payment_proof')->nullable();
             $table->timestamps();
         });
     }

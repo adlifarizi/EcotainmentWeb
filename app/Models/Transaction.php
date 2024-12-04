@@ -13,6 +13,7 @@ class Transaction extends Model
         'user_id',
         'total_amount',
         'status',
+        'payment_proof',
     ];
 
     // Relasi dengan model User
