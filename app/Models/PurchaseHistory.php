@@ -13,20 +13,19 @@ class PurchaseHistory extends Model
 
     protected $fillable = [
         'user_id',
-        'product_id',
-        'quantity',
-        'total_price',
+        'transaction_id',
     ];
 
-    // Relasi dengan model User
+    // Relasi dengan User
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // Relasi dengan model Product
-    public function product()
+    // Relasi dengan Transaction
+    public function transaction()
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Transaction::class);
     }
 }
+

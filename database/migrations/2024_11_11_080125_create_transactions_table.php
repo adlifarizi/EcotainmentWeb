@@ -17,7 +17,10 @@ return new class extends Migration
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             
             $table->integer('total_amount'); // total pembayaran
-            $table->enum('status', ['pending', 'processed', 'completed', 'canceled'])->default('pending'); // status transaksi
+            $table->enum('status', ['pending', 'waiting_for_confirmation', 'processed', 'completed', 'canceled'])->default('pending'); // status transaksi
+            $table->string('recipient_name');
+            $table->string('phone_number');
+            $table->string('address');
             $table->string('payment_proof')->nullable();
             $table->timestamps();
         });

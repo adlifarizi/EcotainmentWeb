@@ -8,12 +8,13 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\WishlistController;
+use App\Http\Middleware\IsAdmin;
 use Illuminate\Support\Facades\Route;
 
 // Route untuk Testing
 Route::get('/test', function () {
     return response()->json([
-        'message' => 'API Test Versi 7',
+        'message' => 'Test API Ver 1.8',
         'status' => 200
     ]);
 });
@@ -33,14 +34,27 @@ Route::prefix('auth')->group(function () {
 Route::prefix('products')->group(function () {
     Route::get('/', [ProductController::class, 'index']); // Semua produk
     Route::get('/{id}', [ProductController::class, 'showByProductId']); // Detail produk
-    Route::post('/', [ProductController::class, 'store']);
-    // Route::post('/', [ProductController::class, 'store'])->middleware('auth:sanctum'); // Tambah produk (Admin)
-    Route::delete('/{id}', [ProductController::class, 'destroy']);
 });
+
+//Route untuk Admin
+Route::middleware(['auth:sanctum', IsAdmin::class])->group(function () {
+
+    Route::prefix('admin')->group(function () {
+        // Product Related
+        Route::post('/product', [ProductController::class, 'store']);
+        Route::put('/product/{id}', [ProductController::class, 'update']);
+        Route::delete('/product/{id}', [ProductController::class, 'destroy']);
+
+        // Transaction Related
+        Route::get('/transactions', [TransactionController::class, 'getAllTransactions']);
+        Route::put('/transactions/{id}/status', [TransactionController::class, 'updateTransactionStatus']);
+    });
+});
+
 
 // Route yang Membutuhkan Autentikasi
 Route::middleware('auth:sanctum')->group(function () {
-    
+
     // Wishlist Routes
     Route::prefix('wishlist')->group(function () {
         Route::get('/', [WishlistController::class, 'index']);
@@ -67,7 +81,6 @@ Route::middleware('auth:sanctum')->group(function () {
     // Purchase History Routes
     Route::prefix('purchase-history')->group(function () {
         Route::get('/', [PurchaseHistoryController::class, 'index']);
-        Route::post('/', [PurchaseHistoryController::class, 'store']);
     });
 
     // Search History Routes

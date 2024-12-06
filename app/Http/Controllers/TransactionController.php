@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PurchaseHistory;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
 use Illuminate\Http\Request;
@@ -42,7 +43,7 @@ class TransactionController extends Controller
             // Proses transaksi jika validasi lolos
             $transaction = Transaction::create([
                 'user_id' => Auth::id(),
-                'total_amount' => $request->total_amount,
+                'total_amount' => intval($request->total_amount),
                 'status' => 'pending', // Status awal adalah 'pending'
             ]);
 
@@ -83,11 +84,11 @@ class TransactionController extends Controller
     public function updateStatus(Request $request, $id): JsonResponse
     {
         $request->validate([
-            'status' => 'required|in:pending,processed,completed,canceled',
+            'status' => 'required|in:pending,waiting_for_confirmation,processed,completed,canceled',
         ]);
 
         try {
-            $transaction = Transaction::where('user_id', Auth::id())->findOrFail($id);
+            $transaction = Transaction::with('items.product')->where('user_id', Auth::id())->findOrFail($id);
 
             // Pastikan status transaksi yang sudah selesai atau dibatalkan tidak bisa diubah
             if ($transaction->status == 'completed' || $transaction->status == 'canceled') {
@@ -97,6 +98,24 @@ class TransactionController extends Controller
                 ], 400);
             }
 
+            // Jika status diubah menjadi "completed"
+            if ($request->status === 'completed') {
+                foreach ($transaction->items as $item) {
+                    // Tambahkan jumlah quantity ke total_sales produk terkait
+                    $product = $item->product;
+                    if ($product) {
+                        $product->increment('total_sales', $item->quantity);
+                    }
+                }
+
+                // Tambahkan riwayat pembelian
+                PurchaseHistory::create([
+                    'user_id' => Auth::id(),
+                    'transaction_id' => $transaction->id,
+                ]);
+            }
+
+            // Update status transaksi
             $transaction->status = $request->status;
             $transaction->save();
 
@@ -119,6 +138,7 @@ class TransactionController extends Controller
             ], 500);
         }
     }
+
 
 
     /**
@@ -157,7 +177,7 @@ class TransactionController extends Controller
             $transaction->payment_proof = Storage::url($imagePath);
 
             // Ubah status transaksi menjadi processed
-            $transaction->status = 'processed';
+            $transaction->status = 'waiting_for_confirmation';
 
             $transaction->save();
 
@@ -183,5 +203,67 @@ class TransactionController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Menampilkan semua transaksi tanpa batasan user (untuk admin).
+     */
+    public function getAllTransactions(): JsonResponse
+    {
+        try {
+            // Mengambil semua transaksi dengan relasi item dan produk
+            $transactions = Transaction::with('items.product', 'user')->get();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil mengambil semua transaksi',
+                'data' => $transactions,
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan pada server',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Mengupdate status transaksi berdasarkan ID transaksi (untuk admin).
+     */
+    public function adminUpdateTransactionStatus(Request $request, $id): JsonResponse
+    {
+        $request->validate([
+            'status' => 'required|in:pending,waiting_for_confirmation,processed,completed,canceled',
+        ]);
+
+        try {
+            // Cari transaksi berdasarkan ID
+            $transaction = Transaction::findOrFail($id);
+
+            // Perbarui status transaksi
+            $transaction->status = $request->status;
+            $transaction->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Status transaksi berhasil diperbarui',
+                'data' => $transaction,
+            ], 200);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Transaksi tidak ditemukan',
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan pada server',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
 
 }

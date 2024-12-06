@@ -98,6 +98,69 @@ class ProductController extends Controller
         ], 201);
     }
 
+    public function update(Request $request, $id): JsonResponse
+    {
+        try {
+            // Cari produk berdasarkan ID
+            $product = Product::findOrFail($id);
+
+            // Validasi input
+            $request->validate([
+                'name' => 'nullable|string|max:255',
+                'price' => 'nullable|numeric|min:0',
+                'category' => 'nullable|string|max:255',
+                'description' => 'nullable|string',
+                'image' => 'nullable|file|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+
+            // Update field jika ada input
+            if ($request->has('name')) {
+                $product->name = $request->name;
+            }
+            if ($request->has('price')) {
+                $product->price = intval($request->price);
+            }
+            if ($request->has('category')) {
+                $product->category = $request->category;
+            }
+            if ($request->has('description')) {
+                $product->description = $request->description;
+            }
+
+            // Update gambar jika ada
+            if ($request->hasFile('image')) {
+                // Hapus gambar lama
+                if ($product->image) {
+                    Storage::delete('public/' . str_replace('/storage/', '', $product->image));
+                }
+                // Simpan gambar baru
+                $imagePath = $request->file('image')->store('images', 'public');
+                $product->image = Storage::url($imagePath);
+            }
+
+            // Simpan perubahan
+            $product->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Produk berhasil diperbarui',
+                'data' => $product,
+            ], 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Produk tidak ditemukan',
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan pada server',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
     public function showByProductId($id): JsonResponse
     {
         try {

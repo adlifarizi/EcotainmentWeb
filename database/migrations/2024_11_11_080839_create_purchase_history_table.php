@@ -16,9 +16,7 @@ return new class extends Migration
             $table->string('user_id'); // sesuaikan tipe data dengan 'id' di tabel 'users'
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             
-            $table->foreignId('product_id')->constrained()->onDelete('cascade'); // relasi ke tabel products
-            $table->integer('quantity'); // jumlah produk
-            $table->integer('total_price'); // total harga
+            $table->foreignId('transaction_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

@@ -21,6 +21,7 @@ class UserController extends Controller
                 'phone_number' => 'nullable',
                 'password' => 'required|min:6',
                 'username' => 'nullable',
+                'role' => 'nullable|in:user,admin',
             ]);
 
             if (!$request->email && !$request->phone_number) {
@@ -36,11 +37,14 @@ class UserController extends Controller
                 $username = explode('@', $request->email)[0];
             }
 
+            $role = $request->role ?? 'user';
+
             $user = User::create([
                 'email' => $request->email,
                 'phone_number' => $request->phone_number,
                 'password' => Hash::make($request->password),
                 'username' => $username,
+                'role' => $role,
             ]);
 
             $token = $user->createToken('Ecotainment')->plainTextToken;
