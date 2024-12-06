@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 // Route untuk Testing
 Route::get('/test', function () {
     return response()->json([
-        'message' => 'Test API Ver 1.8.2',
+        'message' => 'Test API Ver 1.8.3',
         'status' => 200
     ]);
 });
@@ -47,7 +47,7 @@ Route::middleware(['auth:sanctum', IsAdmin::class])->group(function () {
 
         // Transaction Related
         Route::get('/transactions', [TransactionController::class, 'getAllTransactions']);
-        Route::put('/transactions/{id}/status', [TransactionController::class, 'updateTransactionStatus']);
+        Route::put('/transactions/{id}/status', [TransactionController::class, 'adminUpdateTransactionStatus']);
     });
 });
 

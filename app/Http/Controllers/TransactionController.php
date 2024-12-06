@@ -245,7 +245,7 @@ class TransactionController extends Controller
 
         try {
             // Cari transaksi berdasarkan ID
-            $transaction = Transaction::with('items.product')->findOrFail($id);
+            $transaction = Transaction::findOrFail($id);
 
             // Perbarui status transaksi
             $transaction->status = $request->status;
