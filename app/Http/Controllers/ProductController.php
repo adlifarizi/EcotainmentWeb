@@ -84,7 +84,7 @@ class ProductController extends Controller
 
         $product = Product::create([
             'name' => $request->name,
-            'price' => $request->price,
+            'price' => intval($request->price),
             'category' => $request->category,
             'description' => $request->description,
             'image' => $imageUrl,

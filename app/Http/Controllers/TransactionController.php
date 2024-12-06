@@ -35,6 +35,9 @@ class TransactionController extends Controller
         try {
             $request->validate([
                 'total_amount' => 'required|numeric',
+                'recipient_name' => 'required',
+                'phone_number' => 'required',
+                'address' => 'required',
                 'items' => 'required|array',
                 'items.*.product_id' => 'required|exists:products,id',
                 'items.*.quantity' => 'required|integer|min:1',
@@ -45,6 +48,9 @@ class TransactionController extends Controller
                 'user_id' => Auth::id(),
                 'total_amount' => intval($request->total_amount),
                 'status' => 'pending', // Status awal adalah 'pending'
+                'recipient_name' => $request->recipient_name,
+                'phone_number' => $request->phone_number,
+                'address' => $request->address,
             ]);
 
             foreach ($request->items as $item) {
