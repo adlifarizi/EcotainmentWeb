@@ -90,7 +90,7 @@ class TransactionController extends Controller
     public function updateStatus(Request $request, $id): JsonResponse
     {
         $request->validate([
-            'status' => 'required|in:pending,waiting_for_confirmation,processed,completed,canceled',
+            'status' => 'required|in:pending,waiting_for_confirmation,processed,on_shipment,completed,canceled',
         ]);
 
         try {
@@ -240,7 +240,7 @@ class TransactionController extends Controller
     public function adminUpdateTransactionStatus(Request $request, $id): JsonResponse
     {
         $request->validate([
-            'status' => 'required|in:pending,waiting_for_confirmation,processed,completed,canceled',
+            'status' => 'required|in:processed,on_shipment,canceled',
         ]);
 
         try {
