@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 // Route untuk Testing
 Route::get('/test', function () {
     return response()->json([
-        'message' => 'Test API Ver 1.8.3',
+        'message' => 'Test API Ver 1.8.4',
         'status' => 200
     ]);
 });
@@ -29,6 +29,7 @@ Route::prefix('auth')->group(function () {
     Route::middleware('auth:sanctum')->get('/address', [UserController::class, 'getAddress']);
     Route::middleware('auth:sanctum')->post('/address', [UserController::class, 'addAddress']);
     Route::middleware('auth:sanctum')->put('/address/{addressId}', [UserController::class, 'editAddress']);
+    Route::middleware('auth:sanctum')->delete('/address/{addressId}', [UserController::class, 'deleteAddress']);
 });
 
 // Route Produk

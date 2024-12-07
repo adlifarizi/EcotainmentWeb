@@ -364,4 +364,34 @@ class UserController extends Controller
     }
 
 
+    public function deleteAddress(Request $request, $addressId): JsonResponse
+    {
+        try {
+            // Mencari alamat berdasarkan ID dan memastikan alamat tersebut milik user yang sedang login
+            $address = Address::where('user_id', Auth::id())->where('id', $addressId)->first();
+
+            if (!$address) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Alamat tidak ditemukan atau Anda tidak memiliki akses untuk menghapus alamat ini',
+                ], 404);
+            }
+
+            // Hapus alamat
+            $address->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Alamat berhasil dihapus',
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menghapus alamat',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
 }
