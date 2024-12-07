@@ -302,6 +302,66 @@ class UserController extends Controller
         }
     }
 
+    public function editAddress(Request $request, $addressId): JsonResponse
+    {
+        try {
+            // Validasi data yang dikirimkan
+            $request->validate([
+                'recipient_name' => 'nullable|string',
+                'phone_number' => 'nullable|string',
+                'province' => 'nullable|string',
+                'city_or_district' => 'nullable|string',
+                'detailed_address' => 'nullable|string',
+            ]);
+
+            // Mencari alamat berdasarkan ID dan memastikan alamat tersebut milik user yang sedang login
+            $address = Address::where('user_id', Auth::id())->where('id', $addressId)->first();
+
+            if (!$address) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Alamat tidak ditemukan atau Anda tidak memiliki akses untuk mengedit alamat ini',
+                ], 404);
+            }
+
+            // Update alamat berdasarkan data yang dikirimkan
+            if ($request->has('recipient_name')) {
+                $address->recipient_name = $request->recipient_name;
+            }
+
+            if ($request->has('phone_number')) {
+                $address->phone_number = $request->phone_number;
+            }
+
+            if ($request->has('province')) {
+                $address->province = $request->province;
+            }
+
+            if ($request->has('city_or_district')) {
+                $address->city_or_district = $request->city_or_district;
+            }
+
+            if ($request->has('detailed_address')) {
+                $address->detailed_address = $request->detailed_address;
+            }
+
+            // Simpan perubahan
+            $address->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Alamat berhasil diperbarui',
+                'data' => $address,
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat memperbarui alamat',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 
 
 }

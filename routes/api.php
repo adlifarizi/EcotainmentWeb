@@ -28,6 +28,7 @@ Route::prefix('auth')->group(function () {
     Route::middleware('auth:sanctum')->put('/profile', [UserController::class, 'updateProfile']);
     Route::middleware('auth:sanctum')->get('/address', [UserController::class, 'getAddress']);
     Route::middleware('auth:sanctum')->post('/address', [UserController::class, 'addAddress']);
+    Route::middleware('auth:sanctum')->put('/address/{addressId}', [UserController::class, 'editAddress']);
 });
 
 // Route Produk
