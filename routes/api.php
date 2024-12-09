@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BankController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\PurchaseHistoryController;
 use App\Http\Controllers\ReviewController;
@@ -14,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 // Route untuk Testing
 Route::get('/test', function () {
     return response()->json([
-        'message' => 'Test API Ver 1.8.4',
+        'message' => 'Test API Ver 1.8.5',
         'status' => 200
     ]);
 });
@@ -38,6 +39,12 @@ Route::prefix('products')->group(function () {
     Route::get('/{id}', [ProductController::class, 'showByProductId']); // Detail produk
 });
 
+// Route Bank
+Route::prefix('bank')->group(function () {
+    Route::get('/', [BankController::class, 'index']);
+    Route::get('/{bankId}', [BankController::class, 'show']);
+});
+
 //Route untuk Admin
 Route::middleware(['auth:sanctum', IsAdmin::class])->group(function () {
 
@@ -50,6 +57,11 @@ Route::middleware(['auth:sanctum', IsAdmin::class])->group(function () {
         // Transaction Related
         Route::get('/transactions', [TransactionController::class, 'getAllTransactions']);
         Route::put('/transactions/{id}/status', [TransactionController::class, 'adminUpdateTransactionStatus']);
+
+        // Bank Related
+        Route::post('/banks', [BankController::class, 'store']);
+        Route::put('/banks/{bankId}', [BankController::class, 'update']);
+        Route::delete('/banks/{bankId}', [BankController::class, 'destroy']);
     });
 });
 
