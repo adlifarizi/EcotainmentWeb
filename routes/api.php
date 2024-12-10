@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 // Route untuk Testing
 Route::get('/test', function () {
     return response()->json([
-        'message' => 'Test API Ver 1.8.8',
+        'message' => 'Test API Ver 1.8.9',
         'status' => 200
     ]);
 });

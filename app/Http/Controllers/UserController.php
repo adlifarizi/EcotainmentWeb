@@ -135,7 +135,7 @@ class UserController extends Controller
                 'password' => 'nullable|min:6',
                 'username' => 'nullable|string',
                 'phone_number' => 'nullable|string',
-                'profile_picture' => 'nullable|file|image|mimes:jpeg,png,jpg,gif',
+                'profile_picture' => 'nullable|file|image|mimes:jpeg,png,jpg,gif,webp',
             ]);
 
             $user = Auth::user();

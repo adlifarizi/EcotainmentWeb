@@ -27,7 +27,7 @@ class BankController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'logo' => 'nullable|file|image|mimes:jpeg,png,jpg,gif',
+            'logo' => 'nullable|file|image|mimes:jpeg,png,jpg,gif,webp',
             'account_number' => 'required|string|max:50',
             'account_holder' => 'required|string|max:255',
             'payment_instructions' => 'required|string',
@@ -82,7 +82,7 @@ class BankController extends Controller
 
             $request->validate([
                 'name' => 'nullable|string|max:255',
-                'logo' => 'nullable|file|image|mimes:jpeg,png,jpg,gif',
+                'logo' => 'nullable|file|image|mimes:jpeg,png,jpg,gif,webp',
                 'account_number' => 'nullable|string|max:50',
                 'account_holder' => 'nullable|string|max:255',
                 'payment_instructions' => 'nullable|string',
