@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('image')->nullable();
             $table->integer('total_sales')->default(0);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

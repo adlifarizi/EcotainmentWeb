@@ -12,34 +12,33 @@ class ProductController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        // Ambil query parameters
         $search = $request->query('search');
         $category = $request->query('category');
-        $sortBy = $request->query('sort_by', 'created_at');  // default sorting berdasarkan created_at
-        $sortOrder = $request->query('sort_order', 'desc');   // default order descending
+        $sortBy = $request->query('sort_by', 'created_at');
+        $sortOrder = $request->query('sort_order', 'desc');
+        $includeDeleted = $request->query('include_deleted', false); // Tambahan parameter
 
-        // Mulai query untuk mengambil produk
         $productsQuery = Product::query();
 
-        // Filter berdasarkan kategori
+        // Include produk yang dihapus jika diminta
+        if ($includeDeleted) {
+            $productsQuery->withTrashed();
+        }
+
         if ($category) {
             $productsQuery->where('category', $category);
         }
 
-        // Pencarian produk berdasarkan nama (name)
         if ($search) {
-            $productsQuery->where('name', 'like', value: '%' . $search . '%');
+            $productsQuery->where('name', 'like', '%' . $search . '%');
         }
 
-        // Mengurutkan produk
         $productsQuery->orderBy($sortBy, $sortOrder);
 
-        // Ambil semua produk yang memenuhi kondisi
         $products = $productsQuery->with('reviews')
             ->withAvg('reviews', 'rating')
-            ->get();  // Ambil semua produk tanpa pagination
+            ->get();
 
-        // Format data
         $products = $products->map(function ($product) {
             $averageRating = $product->reviews_avg_rating ?? 0;
             $averageRating = number_format($averageRating, 1);
@@ -53,6 +52,7 @@ class ProductController extends Controller
                 'image' => $product->image,
                 'total_sales' => $product->total_sales,
                 'average_rating' => $averageRating,
+                'deleted_at' => $product->deleted_at, // Tambahkan jika ada soft delete
                 'created_at' => $product->created_at,
                 'updated_at' => $product->updated_at,
             ];
@@ -209,15 +209,12 @@ class ProductController extends Controller
     public function destroy($id): JsonResponse
     {
         try {
-            // Mencari produk berdasarkan ID
             $product = Product::findOrFail($id);
 
-            // Hapus gambar produk jika ada
-            if ($product->image) {
-                Storage::delete('public/' . str_replace('/storage/', '', $product->image));
-            }
+            // if ($product->image) {
+            //     Storage::delete('public/' . str_replace('/storage/', '', $product->image));
+            // }
 
-            // Hapus produk
             $product->delete();
 
             return response()->json([
