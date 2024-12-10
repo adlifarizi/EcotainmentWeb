@@ -153,7 +153,7 @@ class TransactionController extends Controller
     public function uploadPaymentProof(Request $request, $id): JsonResponse
     {
         $request->validate([
-            'payment_proof' => 'required|file|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'payment_proof' => 'required|file|image|mimes:jpeg,png,jpg,gif',
         ]);
 
         try {

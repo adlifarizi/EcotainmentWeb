@@ -73,7 +73,7 @@ class ProductController extends Controller
             'price' => 'required|numeric|min:0',
             'category' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'image' => 'nullable|file|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|file|image|mimes:jpeg,png,jpg,gif',
         ]);
 
         $imageUrl = null;
@@ -110,7 +110,7 @@ class ProductController extends Controller
                 'price' => 'nullable|numeric|min:0',
                 'category' => 'nullable|string|max:255',
                 'description' => 'nullable|string',
-                'image' => 'nullable|file|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'image' => 'nullable|file|image|mimes:jpeg,png,jpg,gif',
             ]);
 
             // Update field jika ada input
