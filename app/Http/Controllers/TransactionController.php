@@ -90,14 +90,14 @@ class TransactionController extends Controller
     public function updateStatus(Request $request, $id): JsonResponse
     {
         $request->validate([
-            'status' => 'required|in:pending,waiting_for_confirmation,processed,on_shipment,completed,canceled',
+            'status' => 'required|in:pending,waiting_for_confirmation,processed,on_shipment,completed,reviewed,canceled',
         ]);
 
         try {
             $transaction = Transaction::with('items.product')->where('user_id', Auth::id())->findOrFail($id);
 
             // Pastikan status transaksi yang sudah selesai atau dibatalkan tidak bisa diubah
-            if ($transaction->status == 'completed' || $transaction->status == 'canceled') {
+            if ($transaction->status === 'canceled') {
                 return response()->json([
                     'success' => false,
                     'message' => 'Tidak dapat mengubah status transaksi yang sudah diselesaikan atau dibatalkan.',

@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 // Route untuk Testing
 Route::get('/test', function () {
     return response()->json([
-        'message' => 'Test API Ver 1.8.5',
+        'message' => 'Test API Ver 1.8.6',
         'status' => 200
     ]);
 });
@@ -105,7 +105,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Route untuk Review oleh User
     Route::prefix('reviews/{productId}')->group(function () {
-        Route::get('/', [ReviewController::class, 'index']); // Semua ulasan dari User
+        Route::get('/', [ReviewController::class, 'index']); // Semua ulasan dari User per Product
         Route::post('/', [ReviewController::class, 'store']); // Tambahkan ulasan baru
     });
 });
