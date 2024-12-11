@@ -28,7 +28,7 @@ class ReviewController extends Controller
             ]);
 
             // Check if product exists
-            $product = Product::findOrFail($productId);
+            $product = Product::withTrashed()->find($productId);
 
             // Create new review
             $review = Review::create([
