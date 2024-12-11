@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BankController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PurchaseHistoryController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SearchHistoryController;
@@ -15,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 // Route untuk Testing
 Route::get('/test', function () {
     return response()->json([
-        'message' => 'Test API Ver 1.9.0',
+        'message' => 'Test API Ver 1.9.1',
         'status' => 200
     ]);
 });
@@ -38,6 +39,10 @@ Route::prefix('auth')->group(function () {
 Route::prefix('products')->group(function () {
     Route::get('/', [ProductController::class, 'index']); // Semua produk
     Route::get('/{id}', [ProductController::class, 'showByProductId']); // Detail produk
+});
+
+Route::prefix('categories')->group(function () {
+    Route::get('/', [CategoryController::class, 'index']); // Semua Category
 });
 
 // Route Bank
