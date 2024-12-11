@@ -43,6 +43,7 @@ Route::prefix('products')->group(function () {
 
 Route::prefix('categories')->group(function () {
     Route::get('/', [CategoryController::class, 'index']); // Semua Category
+    Route::post('/', [CategoryController::class, 'store']); // Add Category
 });
 
 // Route Bank
