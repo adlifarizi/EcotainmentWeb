@@ -198,6 +198,43 @@ class UserController extends Controller
         }
     }
 
+    public function updatePassword(Request $request): JsonResponse
+    {
+        try {
+            // Validasi input
+            $request->validate([
+                'current_password' => 'required|string|min:6',
+                'new_password' => 'required|string|min:6',
+            ]);
+
+            $user = Auth::user();
+
+            // Memeriksa apakah password lama yang dimasukkan cocok
+            if (!Hash::check($request->current_password, $user->password)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Password lama tidak cocok',
+                ], 400);
+            }
+
+            // Update password jika password lama cocok
+            $user->password = Hash::make($request->new_password);
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Password berhasil diperbarui',
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat memperbarui password',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
 
     public function logout(Request $request): JsonResponse
     {

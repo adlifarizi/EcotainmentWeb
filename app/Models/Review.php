@@ -25,7 +25,7 @@ class Review extends Model
     // Relasi ke model Product
     public function product()
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Product::class)->withTrashed();
     }
 
 }
