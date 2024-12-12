@@ -13,6 +13,23 @@ use Storage;
 
 class UserController extends Controller
 {
+
+    public function checkToken(Request $request): JsonResponse
+    {
+        // Pastikan user sudah terautentikasi
+        if (!$request->user()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 401);
+        } else {
+            return response()->json([
+                'success' => true,
+                'message' => 'Token Valid',
+            ], status: 200);
+        }
+    }
+
     public function signUp(Request $request): JsonResponse
     {
         try {

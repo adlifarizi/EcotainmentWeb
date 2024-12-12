@@ -16,13 +16,14 @@ use Illuminate\Support\Facades\Route;
 // Route untuk Testing
 Route::get('/test', function () {
     return response()->json([
-        'message' => 'Test API Ver 1.9.1',
+        'message' => 'Test API Ver 1.9.2',
         'status' => 200
     ]);
 });
 
 // Route untuk User Authentication
 Route::prefix('auth')->group(function () {
+    Route::middleware('auth:sanctum')->get('/check-token', [UserController::class, 'checkToken']);
     Route::post('/signup', [UserController::class, 'signUp']);
     Route::post('/signin', [UserController::class, 'signIn']);
     Route::middleware('auth:sanctum')->post('/logout', [UserController::class, 'logout']);
