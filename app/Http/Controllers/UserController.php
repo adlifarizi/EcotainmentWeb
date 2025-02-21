@@ -53,8 +53,6 @@ class UserController extends Controller
                 $username = explode('@', $request->email)[0];
             }
 
-            $role = $request->role ?? 'user';
-
             $user = User::create([
                 'email' => $request->email,
                 'phone_number' => $request->phone_number,
