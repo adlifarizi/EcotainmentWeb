@@ -58,6 +58,7 @@ class UserController extends Controller
                 'phone_number' => $request->phone_number,
                 'password' => Hash::make($request->password),
                 'username' => $username,
+                'role' => 'user',
             ]);
 
             $token = $user->createToken('Ecotainment')->plainTextToken;
